@@ -41,6 +41,7 @@ void UGrabber::SetupInputComponent()
 	{
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+		InputComponent->BindAction("Throw", IE_Pressed, this, &UGrabber::Throw);
 	}
 	else
 	{
@@ -61,8 +62,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	if (PhysicsHandle->GrabbedComponent) 
 	{
 		PhysicsHandle->SetTargetLocation(GetReachLineEnd());
-	}
-	
+	}	
 }
 
 
@@ -81,6 +81,23 @@ void UGrabber::Grab() {
 			true // allow rotation
 		);
 	}
+}
+
+void UGrabber::Throw() {
+	/// LINE TRACE and see if we reach any actors with physics body collision channel set
+	auto HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+
+	if (!PhysicsHandle) { return; }
+	PhysicsHandle->ReleaseComponent();
+
+	if (!ComponentToGrab) { return; }
+	ComponentToGrab->AddImpulse(
+		GetThrowForce(),
+		NAME_None,
+		true
+	);
+
 }
 
 void UGrabber::Release()
@@ -129,4 +146,16 @@ FVector UGrabber::GetReachLineEnd()
 	);
 
 	return PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+}
+
+FVector UGrabber::GetThrowForce()
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		OUT PlayerViewPointLocation,
+		OUT PlayerViewPointRotation
+	);
+
+	return PlayerViewPointRotation.Vector() * Force;
 }

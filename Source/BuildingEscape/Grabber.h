@@ -27,9 +27,14 @@ public:
 
 
 
+
 private:
 	// How far ahead of the player can we reach in cm
 	float Reach = 100.f;
+
+	// Throwing force
+	UPROPERTY(EditAnywhere)
+	float Force = 500.f;
 
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
 
@@ -40,6 +45,8 @@ private:
 
 	// Called when grab is released
 	void Release();
+
+	void Throw();
 
 	// Find (assumed) attached phyics handle
 	void FindPhysicsHandleComponent();
@@ -55,4 +62,7 @@ private:
 
 	// Returns current end of reach line
 	FVector GetReachLineEnd();
+
+	// Returns the vector that throws the grabbed object
+	FVector GetThrowForce();
 };
